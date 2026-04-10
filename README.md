@@ -20,85 +20,24 @@ project/
 └── tests/              # Tests amb Postman
     └── Postman_API_tests.json
 ```
-#### Fitxer `app.py`
 
-En projectes més complexos, es separaria, per exemple, la connexió a MongoDB en un fitxer a banda, anomenat `database.py`; i, els models, en `models.py`.
-En el nostre cas, tot el backend l'implementarem dins del fitxer `app.py` per simplificar.
-
-Tot i això, és **molt recomanable**:
-- Afegir **grans comentaris per separar lògica** de connexió, models i endpoints.
-- **Documentar clarament cada secció** per facilitar la lectura i localització d’errors.
-
-Un bon exemple seria aquest:
-```python
-import os
-from typing import Optional, List
-
-from fastapi import FastAPI, Body, HTTPException, status
-from fastapi.responses import Response
-from pydantic import ConfigDict, BaseModel, Field, EmailStr
-from pydantic.functional_validators import BeforeValidator
-from typing_extensions import Annotated
-
-from bson import ObjectId
-import asyncio
-from pymongo import AsyncMongoClient
-from pymongo import ReturnDocument
 
 # ------------------------------------------------------------------------ #
-#                         Inicialització de l'aplicació                    #
+#                         Instalació/Configuració ApiRest                  #
 # ------------------------------------------------------------------------ #
-# Creació de la instància FastAPI amb informació bàsica de l'API
-app = FastAPI(
-    title="Student Course API",
-    summary="Exemple d'API REST amb FastAPI i MongoDB per gestionar informació d'estudiants",
-)
 
-# ------------------------------------------------------------------------ #
-#                   Configuració de la connexió amb MongoDB               #
-# ------------------------------------------------------------------------ #
-# Creem el client de MongoDB utilitzant la URL de connexió emmagatzemada
-# a les variables d'entorn. Això evita incloure credencials dins del codi.
-client = AsyncMongoClient(os.environ["MONGODB_URL"])
+Primerament, haurem de fer un git clone a la nostra màquina real del projecte del Sprint4. Una vegada dins, haurem de crear un entorn virtual amb la comanda python3 -m venv venv i source venv/bin/activate per a executar l'entorn virtual de Python. Una vegada dins, haurem d'anar a la carpeta de backend i instal·lar el requirements.txt, però en el meu cas he afegit fastapi==0.104.1, uvicorn[standard]==0.24.0 i pymongo==4.6.0, on fem servir la FastAPI i PyMongo per a configurar i crear la nostra API. Així mateix, fem servir l'Uvicorn per a desplegar la nostra API de manera molt més còmoda i rapida per a fer les nostres comporvacions amb el psotman i el fronted.
 
-# Selecció de la base de dades i de la col·lecció
-db = client.college
-student_collection = db.get_collection("students")
+<img width="807" height="447" alt="Captura desde 2026-04-09 10-36-20" src="https://github.com/user-attachments/assets/a5ff79bf-5feb-4344-9e91-1b57ff4173dc" />
 
-# Els documents de MongoDB tenen `_id` de tipus ObjectId.
-# Aquí definim PyObjectId com un string serialitzable per JSON,
-# que serà utilitzat als models Pydantic.
-PyObjectId = Annotated[str, BeforeValidator(str)]
+Seguidament, antes de començar haurem d'anar al nsotre mongodb atlas en el compas on haurem de elegir entre els 5 ejemples de base de dades per a este projecte, en el meu cas he elegit el de gestor de tasques. A més a més, he anat al geminis i li he pasat l'exemple del document del gestor de tasques per  a que hem faigue 30 registros per a un arxiu de json per a després importalo al meu mongodb. He creat el arxiu import.json i l'he importat al meu mongodb atlas en una nova base de dades anomenada Sprint4 i en la colleció GestorDeTasques.
 
-# ------------------------------------------------------------------------ #
-#                            Definició dels models                        #
-# ------------------------------------------------------------------------ #
-class StudentModel(BaseModel):
-    """
-    Model que representa un estudiant.
-    Conté tots els camps obligatoris i opcional `_id`.
-    """
-    # Clau primària de l'estudiant. 
-    # MongoDB utilitza `_id`, però l'API exposa aquest camp com `id`.
-    id: Optional[PyObjectId] = Field(alias="_id", default=None)
-    
-    # Camps obligatoris de l'estudiant
-    name: str = Field(...)
-    email: EmailStr = Field(...)
-    course: str = Field(...)
-    gpa: float = Field(..., le=4.0)
+<img width="1106" height="719" alt="Captura desde 2026-04-09 11-38-33" src="https://github.com/user-attachments/assets/349c1513-e5f0-42a3-ba39-898669ed27e0" />
 
-    # Configuració addicional del model Pydantic
-    model_config = ConfigDict(
-        populate_by_name=True,  # Permet utilitzar alias al serialitzar/deserialitzar
-        arbitrary_types_allowed=True,  # Permet tipus personalitzats com ObjectId
-        json_schema_extra={
-            "example": {
-                "name": "Jane Doe",
-                "email": "jdoe@example.com",
-                "course": "Experiments, Science, and Fashion in Nanophotonics",
-                "gpa": 3.0,
-            }
-        },
-    )
-```
+Per altra banda, haurem de tornar a la carpeta del backend, on haurem de modificar el arxiu app.py modificant l'apartat de la conexió de MongoDB atlas haurem de cambiar l'informació del Mongodb_url, el nom de la base de dades per la nostra i la colleció on tenim el gestor de tasques. A més a més haurem de cambiar el pydantic, on haurem de configurar el format del document de la nostra colleció de Gestero de tasques i un exemple. Per ultim, configurarem el @app-get /ver per a tenir ja preparada la part del fronted en la configuració del nostre app.py i definirem diferents endpoints (/, /tasques, /buscar/{titol}, /buscar/{id_tasca}, /crear, /actualitzar/{id_tasca} i /borrar/{id_tasca}). Una vegada fet aixo, haurem de ficar la seguent comanda uvicorn main:app --host 192.168.221.0 --port 8000 --reload per a desplegar la nostra api i poder veurela en un navegador.
+
+<img width="1402" height="674" alt="Captura desde 2026-04-09 12-54-21" src="https://github.com/user-attachments/assets/925c037a-169e-4ca4-bafc-8c5d1fc2ac6e" />
+
+
+
+
