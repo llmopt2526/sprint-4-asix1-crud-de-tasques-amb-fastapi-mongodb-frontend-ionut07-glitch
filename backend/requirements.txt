@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 annotated-types==0.6.0
     # via pydantic
 anyio==3.7.1
@@ -8,3 +9,15 @@ dnspython==2.4.2
     # via
     #   email-validator
     #   pymongo
+=======
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pymongo==4.6.0
+dnspython==2.4.2
+pydantic==2.4.2
+pydantic-settings==2.0.3
+annotated-types==0.6.0
+typing-extensions==4.8.0
+anyio==3.7.1
+click==8.1.7
+>>>>>>> master
