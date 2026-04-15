@@ -1,80 +1,150 @@
-//===Any global variables whose scope will need to be across the entire file...
-var currentId;
+const API_URL = ""; 
+let allTasks = []; 
 
-//===Actually, I am kind of a big fan of defining a Global object, or something
-//	 similar to store all of my page-level variables to. Something like:
-var Global = {
-	currentId: undefined,
-	action: 'create',
-	user: {
-		userName: 'Bob',
-		email: 'bgibilaro@valexander.com',
-		extension: '2470'
-	}
-};
-
-// this allows me to get those values anywhere in the page with
-// something like Global.currentId or Global.user.userName. I can also set it by saying
-// Global.currentId = 2. I can even add to it on-the-fly by saying
-// Global.newVariable = 'something' which is now available over the
-// entirety of that page....
-
-//===My document.ready() handler...
-$(document).ready(function(){
-
-	//=== do some code stuff...
-
-	//===finally, bind my events...
-	bindEvents();
-});
-
-//===This function handles event binding for anything on the page....
-function bindEvents(){
-	// So, something simply like binding to a static anchor tag...
-	$('#aSomeLink').on('click', function(event){
-
-		// do some cool code stuff...
-		// Mr. Wizard Time: try putting a break point someplace in here and
-		//	then investigate the event argument. All sorts of cool stuff can
-		//	come from there. In fact, what if I wanted to assign the link that
-		//	was clicked to a local variable?
-
-		// I could do this...
-		$a = $(this);	// note, prefixing the variable with bling ($) is just a 
-						// nice way for us to know that it is a jQuery object...
-
-		// Or, I could do this...
-		$a = $(event.target);
-
-		// I could also get the id of the link like so:
-		var id = event.target.id;
-
-		// not a big difference, but it is nice to use native JavaScript when you can. 
-	});
-
-	// Hey, but I can also do something cooler with the on method. What if I have a table
-	//	full of documents on the page with the option to edit, delete, etc. each of the table
-	//	rows. I can handle this in one nice bind using on. for the sake of this example, let's
-	//	assume I gave the "delete" link an attribute of rel="delete" and the "edit" link an 
-	//	attribute of rel="edit", I could do the following:
-	$('#myTable').on('click', 'a[rel=delete],a[rel=edit]', function(event){
-		$a = $(event.target);
-
-		switch($a.attr('rel')){
-			case 'edit':
-
-				// do some stuff or call a function...
-				
-				break;
-			case 'delete':
-				// do some stuff or call a function...
-
-				break;
-		}
-	});
-
-	// the above allows you to setup your bindings one time, when the page loads and then forget about
-	//	it. It will apply those bindings any time a new row is added to #myTable, automagically...
+async function loadTasks() {
+    try {
+        const response = await fetch(`${API_URL}/tasques`);
+        allTasks = await response.json();
+        updateUserFilter(); 
+        renderTasks(allTasks);
+    } catch (error) {
+        console.error('Error:', error);
+    }
 }
 
-//===Then everything below this is all of the other declared functions for my page...
+function renderTasks(tasksToRender) {
+    document.getElementById('list-pendent').innerHTML = '';
+    document.getElementById('list-feta').innerHTML = '';
+    tasksToRender.forEach(task => {
+        const listElement = document.getElementById(`list-${task.estat}`);
+        if (listElement) listElement.appendChild(createTaskCard(task));
+    });
+}
+
+function filterTasks() {
+    const searchT = document.getElementById('searchTitle').value.toLowerCase();
+    const filterU = document.getElementById('filterUser').value;
+    const filterC = document.getElementById('filterCategory').value;
+    const filterS = document.getElementById('filterStatus').value;
+
+    const filtered = allTasks.filter(task => {
+        return task.titol.toLowerCase().includes(searchT) &&
+               (filterU === "" || task.persona_assignada === filterU) &&
+               (filterC === "" || task.categoria === filterC) &&
+               (filterS === "" || task.estat === filterS);
+    });
+    renderTasks(filtered);
+}
+
+function updateUserFilter() {
+    const userSelect = document.getElementById('filterUser');
+    const users = [...new Set(allTasks.map(t => t.persona_assignada))];
+    userSelect.innerHTML = '<option value="">Tots els usuaris</option>';
+    users.forEach(u => {
+        const opt = document.createElement('option');
+        opt.value = opt.innerText = u;
+        userSelect.appendChild(opt);
+    });
+}
+
+function resetFilters() {
+    document.getElementById('searchTitle').value = '';
+    document.getElementById('filterUser').value = '';
+    document.getElementById('filterCategory').value = '';
+    document.getElementById('filterStatus').value = '';
+    renderTasks(allTasks);
+}
+
+function createTaskCard(task) {
+    const realId = task.id || task._id;
+    const initials = task.persona_assignada ? task.persona_assignada.charAt(0).toUpperCase() : '?';
+    let colorClass = 'card-default';
+    if (task.categoria === 'Sistemes') colorClass = 'card-blue';
+    else if (task.categoria === 'Disseny') colorClass = 'card-pink';
+    else if (task.categoria === 'Desenvolupament') colorClass = 'card-green';
+
+    const card = document.createElement('div');
+    card.className = `task-card ${colorClass}`;
+    card.id = `task-${realId}`;
+    card.draggable = true;
+    card.ondragstart = (e) => e.dataTransfer.setData("text", e.target.id);
+    
+    card.innerHTML = `
+        <div class="task-title">${task.titol}</div>
+        <div class="task-desc">${task.descripcio}</div>
+        <div class="task-footer">
+            <div class="task-assignee-avatar">${initials}</div>
+            <div class="task-actions">
+                <button onclick="openModal('editar', '', '${realId}')">✏️</button>
+                <button onclick="deleteTask('${realId}')">🗑️</button>
+            </div>
+        </div>
+    `;
+    return card;
+}
+
+function allowDrop(ev) { ev.preventDefault(); }
+async function drop(ev) {
+    ev.preventDefault();
+    const id = ev.dataTransfer.getData("text").replace('task-', '');
+    let col = ev.target;
+    while (col && !col.classList.contains('kanban-column')) col = col.parentElement;
+    if (col) {
+        await fetch(`${API_URL}/actualizar/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ estat: col.getAttribute('data-status') })
+        });
+        loadTasks();
+    }
+}
+
+async function openModal(mode, status = '', id = null) {
+    const modal = document.getElementById('taskModal');
+    modal.style.display = 'block';
+    if (mode === 'crear') {
+        document.getElementById('taskForm').reset();
+        document.getElementById('estat').value = status;
+        document.getElementById('taskId').value = '';
+    } else {
+        const res = await fetch(`${API_URL}/buscar_id/${id}`);
+        const t = await res.json();
+        document.getElementById('taskId').value = id;
+        document.getElementById('titol').value = t.titol;
+        document.getElementById('descripcio').value = t.descripcio;
+        document.getElementById('estat').value = t.estat;
+        document.getElementById('categoria').value = t.categoria;
+        document.getElementById('persona_assignada').value = t.persona_assignada;
+    }
+}
+
+function closeModal() { document.getElementById('taskModal').style.display = 'none'; }
+
+document.getElementById('taskForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('taskId').value;
+    const data = {
+        titol: document.getElementById('titol').value,
+        descripcio: document.getElementById('descripcio').value,
+        estat: document.getElementById('estat').value,
+        categoria: document.getElementById('categoria').value,
+        persona_assignada: document.getElementById('persona_assignada').value,
+        prioritat: "baixa"
+    };
+    await fetch(id ? `${API_URL}/actualizar/${id}` : `${API_URL}/crear`, {
+        method: id ? 'PUT' : 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    });
+    closeModal();
+    loadTasks();
+};
+
+async function deleteTask(id) {
+    if (confirm('Esborrar?')) {
+        await fetch(`${API_URL}/borrar/${id}`, { method: 'DELETE' });
+        loadTasks();
+    }
+}
+
+window.onload = loadTasks;
