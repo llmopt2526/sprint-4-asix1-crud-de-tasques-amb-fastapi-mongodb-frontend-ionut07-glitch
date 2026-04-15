@@ -7,6 +7,7 @@ from pydantic.functional_validators import BeforeValidator
 from typing_extensions import Annotated
 from bson import ObjectId
 from pymongo import MongoClient, ReturnDocument
+from fastapi.staticfiles import StaticFiles
 
 # ------------------------------------------------------------------------ #
 #                         Inicialització de l'aplicació                    #
@@ -67,12 +68,16 @@ class UpdateTaskModel(BaseModel):
 #                               ENDPOINTS                                  #
 # ------------------------------------------------------------------------ #
 
+app.mount("/static", StaticFiles(directory="../frontend"), name="static")
+
 @app.get("/ver", include_in_schema=False)
 def ver_pagina_web():
+    # Aquesta part la deixem igual, és correcta
     ruta_html = os.path.join(os.getcwd(), "..", "frontend", "index.html")
     if os.path.exists(ruta_html):
         return FileResponse(ruta_html)
-    return {"error": f"Fitxer index.html no trobat a: {ruta_html}"}
+    return {"error": f"Fitxer no trobat"}
+
 
 @app.get("/")
 def inicio():
