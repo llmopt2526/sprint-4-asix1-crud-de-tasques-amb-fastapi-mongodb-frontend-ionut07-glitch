@@ -14,7 +14,7 @@ from pymongo import MongoClient, ReturnDocument
 from fastapi.staticfiles import StaticFiles
 
 # ------------------------------------------------------------------------ #
-#                        Inicialització de l'aplicació                      #
+#                        Inicialització de l'aplicació                     #
 # ------------------------------------------------------------------------ #
 app = FastAPI(
     title="Gestor de Tasques API - Ionut Antonio Ardean",
