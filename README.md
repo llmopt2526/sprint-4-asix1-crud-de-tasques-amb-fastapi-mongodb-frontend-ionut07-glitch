@@ -1,3 +1,4 @@
+[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/ULL36zWV)
 ### Estructura del projecte
 
 A diferència d’altres projectes més complexos, en aquest cas **treballareu amb una estructura simple**, igual que a l’exemple oficial. Tot el backend s’ubica en un únic fitxer (`app.py`), amb l’objectiu de centrar-se en **aprendre CRUD amb FastAPI i MongoDB** abans de **modularitzar el codi**.
@@ -19,85 +20,45 @@ project/
 └── tests/              # Tests amb Postman
     └── Postman_API_tests.json
 ```
-#### Fitxer `app.py`
 
-En projectes més complexos, es separaria, per exemple, la connexió a MongoDB en un fitxer a banda, anomenat `database.py`; i, els models, en `models.py`.
-En el nostre cas, tot el backend l'implementarem dins del fitxer `app.py` per simplificar.
-
-Tot i això, és **molt recomanable**:
-- Afegir **grans comentaris per separar lògica** de connexió, models i endpoints.
-- **Documentar clarament cada secció** per facilitar la lectura i localització d’errors.
-
-Un bon exemple seria aquest:
-```python
-import os
-from typing import Optional, List
-
-from fastapi import FastAPI, Body, HTTPException, status
-from fastapi.responses import Response
-from pydantic import ConfigDict, BaseModel, Field, EmailStr
-from pydantic.functional_validators import BeforeValidator
-from typing_extensions import Annotated
-
-from bson import ObjectId
-import asyncio
-from pymongo import AsyncMongoClient
-from pymongo import ReturnDocument
 
 # ------------------------------------------------------------------------ #
-#                         Inicialització de l'aplicació                    #
+#                         Instalació/Configuració ApiRest                  #
 # ------------------------------------------------------------------------ #
-# Creació de la instància FastAPI amb informació bàsica de l'API
-app = FastAPI(
-    title="Student Course API",
-    summary="Exemple d'API REST amb FastAPI i MongoDB per gestionar informació d'estudiants",
-)
+
+
+Primerament, haurem de fer un git clone a la nostra màquina real del projecte del Sprint4. Una vegada dins, haurem de crear un entorn virtual amb la comanda python3 -m venv venv i source venv/bin/activate per a executar l'entorn virtual de Python. Una vegada dins, haurem d'anar a la carpeta de backend i instal·lar el requirements.txt, però en el meu cas he afegit fastapi==0.104.1, uvicorn[standard]==0.24.0 i pymongo==4.6.0, on fem servir la FastAPI i PyMongo per a configurar i crear la nostra API. Així mateix, fem servir l'Uvicorn per a desplegar la nostra API de manera molt més còmoda i rapida per a fer les nostres comporvacions amb el psotman i el fronted.
+
+<img width="807" height="447" alt="Captura desde 2026-04-09 10-36-20" src="https://github.com/user-attachments/assets/a5ff79bf-5feb-4344-9e91-1b57ff4173dc" />
+
+Seguidament, antes de començar haurem d'anar al nsotre mongodb atlas en el compas on haurem de elegir entre els 5 ejemples de base de dades per a este projecte, en el meu cas he elegit el de gestor de tasques. A més a més, he anat al geminis i li he pasat l'exemple del document del gestor de tasques per  a que hem faigue 30 registros per a un arxiu de json per a després importalo al meu mongodb. He creat el arxiu import.json i l'he importat al meu mongodb atlas en una nova base de dades anomenada Sprint4 i en la colleció GestorDeTasques.
+
+<img width="1106" height="719" alt="Captura desde 2026-04-09 11-38-33" src="https://github.com/user-attachments/assets/349c1513-e5f0-42a3-ba39-898669ed27e0" />
+
+Per altra banda, haurem de tornar a la carpeta del backend, on haurem de modificar el arxiu app.py modificant l'apartat de la conexió de MongoDB atlas haurem de cambiar l'informació del Mongodb_url, el nom de la base de dades per la nostra i la colleció on tenim el gestor de tasques. A més a més haurem de cambiar el pydantic, on haurem de configurar el format del document de la nostra colleció de Gestero de tasques i un exemple. Per ultim, configurarem el @app-get /ver per a tenir ja preparada la part del fronted en la configuració del nostre app.py i definirem diferents endpoints (/, /tasques, /buscar/{titol}, /buscar/{id_tasca}, /crear, /actualitzar/{id_tasca} i /borrar/{id_tasca}). Una vegada fet aixo, haurem de ficar la seguent comanda uvicorn main:app --host 192.168.221.0 --port 8000 --reload per a desplegar la nostra api i poder veurela en un navegador.
+
+<img width="1402" height="674" alt="Captura desde 2026-04-09 12-54-21" src="https://github.com/user-attachments/assets/925c037a-169e-4ca4-bafc-8c5d1fc2ac6e" />
+
 
 # ------------------------------------------------------------------------ #
-#                   Configuració de la connexió amb MongoDB               #
+#                         Comprovacions ApiRest                            #
 # ------------------------------------------------------------------------ #
-# Creem el client de MongoDB utilitzant la URL de connexió emmagatzemada
-# a les variables d'entorn. Això evita incloure credencials dins del codi.
-client = AsyncMongoClient(os.environ["MONGODB_URL"])
 
-# Selecció de la base de dades i de la col·lecció
-db = client.college
-student_collection = db.get_collection("students")
 
-# Els documents de MongoDB tenen `_id` de tipus ObjectId.
-# Aquí definim PyObjectId com un string serialitzable per JSON,
-# que serà utilitzat als models Pydantic.
-PyObjectId = Annotated[str, BeforeValidator(str)]
+Així mateix, farem les diferents comprovacions de cada endpoint amb el Swagger (a la carpeta test tens captures de les comprovacions). Una vegada comprovats tots els diferents endpoints, anirem al Postman i crearem una variable d'entorn amb la URL de la nostra API amb el port 8000.
+
+Seguidament, crearem una col·lecció on provarem cada endpoint per a veure si funciona correctament i els guardarem en la col·lecció. Una vegada fet tot l'anterior, anirem als tres punts d'opcions de la col·lecció i li donarem a exportar col·lecció per a exportar-la a JSON. Com a millora de la meva API, en comptes de tenir diferents endpoints per a cada tipus de CRUD, seria tenir un mateix punt (/tasques/) i, des d'allí, gestionar els diversos mètodes per a cada operació (tasques/buscar/{id} per exemple).
+
+
+<img width="270" height="230" alt="image" src="https://github.com/user-attachments/assets/8bd78527-fe06-4d84-a1b4-cdcc1510c827" />
+
 
 # ------------------------------------------------------------------------ #
-#                            Definició dels models                        #
+#                      Configuracio/Proves Fronted                         #
 # ------------------------------------------------------------------------ #
-class StudentModel(BaseModel):
-    """
-    Model que representa un estudiant.
-    Conté tots els camps obligatoris i opcional `_id`.
-    """
-    # Clau primària de l'estudiant. 
-    # MongoDB utilitza `_id`, però l'API exposa aquest camp com `id`.
-    id: Optional[PyObjectId] = Field(alias="_id", default=None)
-    
-    # Camps obligatoris de l'estudiant
-    name: str = Field(...)
-    email: EmailStr = Field(...)
-    course: str = Field(...)
-    gpa: float = Field(..., le=4.0)
 
-    # Configuració addicional del model Pydantic
-    model_config = ConfigDict(
-        populate_by_name=True,  # Permet utilitzar alias al serialitzar/deserialitzar
-        arbitrary_types_allowed=True,  # Permet tipus personalitzats com ObjectId
-        json_schema_extra={
-            "example": {
-                "name": "Jane Doe",
-                "email": "jdoe@example.com",
-                "course": "Experiments, Science, and Fashion in Nanophotonics",
-                "gpa": 3.0,
-            }
-        },
-    )
-```
+Finalment, una vegada hem fet l'API correctament perquè funcioni amb l'API conjunta per a veure-la al navegador amb l'Uvicorn i l'aiofiles perquè trobi els arxius del frontend, especificant-ho abans a l'API on creem la carpeta /static, que està vinculada a la carpeta del frontend per a trobar el CSS i el JS. En aquesta part, haurem de crear el nostre propi HTML, el CSS que fa servir el Skeleton i el JS on implementem els diferents CRUD amb l'API i la connexió on fem servir diferents funcions, objectes, variables...
+
+A més a més, en un app.get farem un punt /ver on ens buscarà l'index.html del frontend per a veure'l al nostre navegador posant http://url:8000/ver. Allí podrem veure bàsicament una pàgina senzilla que replica el Kanbanflow simplificat a "pendent" i "fet", amb una barra de cercador i alguns filtres on estan totes les funcions CRUD. Per altra banda, si aneu a la carpeta de tests, he posat un vídeo del frontend fent les diferents funcions CRUD i tinc una carpeta de documentació amb alguns apunts per a entendre de manera més fàcil el meu codi de JavaScript, amb alguna URL amb documentació a banda dels comentaris al mateix JS.
+
+<img width="1851" height="1122" alt="image" src="https://github.com/user-attachments/assets/23501bff-92d3-4a03-b804-8df0c518dbca" />

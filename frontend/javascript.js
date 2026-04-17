@@ -1,80 +1,201 @@
-//===Any global variables whose scope will need to be across the entire file...
-var currentId;
+// ------------------------------------------------------------------------ //
+//                            Cerca JavaScript                              //
+// ------------------------------------------------------------------------ //
 
-//===Actually, I am kind of a big fan of defining a Global object, or something
-//	 similar to store all of my page-level variables to. Something like:
-var Global = {
-	currentId: undefined,
-	action: 'create',
-	user: {
-		userName: 'Bob',
-		email: 'bgibilaro@valexander.com',
-		extension: '2470'
-	}
-};
+// Variable de configuració per a l'API. 
+// Es deixa buida ("") per fer servir rutes relatives. Això permet que el frontend 
+// funcioni correctament tant en local (localhost) com en producció (servidor real)
+// sense haver de canviar manualment l'adreça IP o el domini.
+const API_URL = ""; 
+let allTasks = []; 
 
-// this allows me to get those values anywhere in the page with
-// something like Global.currentId or Global.user.userName. I can also set it by saying
-// Global.currentId = 2. I can even add to it on-the-fly by saying
-// Global.newVariable = 'something' which is now available over the
-// entirety of that page....
-
-//===My document.ready() handler...
-$(document).ready(function(){
-
-	//=== do some code stuff...
-
-	//===finally, bind my events...
-	bindEvents();
-});
-
-//===This function handles event binding for anything on the page....
-function bindEvents(){
-	// So, something simply like binding to a static anchor tag...
-	$('#aSomeLink').on('click', function(event){
-
-		// do some cool code stuff...
-		// Mr. Wizard Time: try putting a break point someplace in here and
-		//	then investigate the event argument. All sorts of cool stuff can
-		//	come from there. In fact, what if I wanted to assign the link that
-		//	was clicked to a local variable?
-
-		// I could do this...
-		$a = $(this);	// note, prefixing the variable with bling ($) is just a 
-						// nice way for us to know that it is a jQuery object...
-
-		// Or, I could do this...
-		$a = $(event.target);
-
-		// I could also get the id of the link like so:
-		var id = event.target.id;
-
-		// not a big difference, but it is nice to use native JavaScript when you can. 
-	});
-
-	// Hey, but I can also do something cooler with the on method. What if I have a table
-	//	full of documents on the page with the option to edit, delete, etc. each of the table
-	//	rows. I can handle this in one nice bind using on. for the sake of this example, let's
-	//	assume I gave the "delete" link an attribute of rel="delete" and the "edit" link an 
-	//	attribute of rel="edit", I could do the following:
-	$('#myTable').on('click', 'a[rel=delete],a[rel=edit]', function(event){
-		$a = $(event.target);
-
-		switch($a.attr('rel')){
-			case 'edit':
-
-				// do some stuff or call a function...
-				
-				break;
-			case 'delete':
-				// do some stuff or call a function...
-
-				break;
-		}
-	});
-
-	// the above allows you to setup your bindings one time, when the page loads and then forget about
-	//	it. It will apply those bindings any time a new row is added to #myTable, automagically...
+// Mitjançant una funció asíncrona, obtenim les dades de l'API. Fem servir await fetch
+// a l'endpoint de tasques i les guardem a la variable allTasks. D'aquesta manera,
+// evitem fer peticions constants a l'API per a operacions de filtratge. 
+// També actualitzem el filtre d'usuaris i gestionem possibles errors.
+async function loadTasks() {
+    try {
+        const response = await fetch(`${API_URL}/tasques`);
+        allTasks = await response.json();
+        updateUserFilter(); 
+        renderTasks(allTasks);
+    } catch (error) {
+        console.error('Error al carregar tasques:', error);
+    }
 }
 
-//===Then everything below this is all of the other declared functions for my page...
+// Aquesta funció s'encarrega de renderitzar les tasques al DOM. Les separa 
+// en el llistat de pendent o feta per distribuir-les en el tauler corresponent
+// basant-se en el camp estat de cada document provinent de MongoDB.
+function renderTasks(tasksToRender) {
+    document.getElementById('list-pendent').innerHTML = '';
+    document.getElementById('list-feta').innerHTML = '';
+    tasksToRender.forEach(task => {
+        const listElement = document.getElementById(`list-${task.estat}`);
+        if (listElement) listElement.appendChild(createTaskCard(task));
+    });
+}
+
+// ------------------------------------------------------------------------ //
+//                           Filtratge de Dades                             //
+// ------------------------------------------------------------------------ //
+
+
+// Aquesta funció recull els valors dels inputs per realitzar la cerca per títol.
+// També aplica els filtres per persona assignada, categoria i estat, permetent
+// una cerca combinada molt precisa.
+function filterTasks() {
+    const searchT = document.getElementById('searchTitle').value.toLowerCase();
+    const filterU = document.getElementById('filterUser').value;
+    const filterC = document.getElementById('filterCategory').value;
+    const filterS = document.getElementById('filterStatus').value;
+
+    const filtered = allTasks.filter(task => {
+        return task.titol.toLowerCase().includes(searchT) &&
+               (filterU === "" || task.persona_assignada === filterU) &&
+               (filterC === "" || task.categoria === filterC) &&
+               (filterS === "" || task.estat === filterS);
+    });
+    renderTasks(filtered);
+}
+
+
+// Aquesta funció genera dinàmicament les opcions del desplegable d'usuaris.
+// Fa servir un Set per obtenir noms únics de la llista de tasques actual,
+// garantint que el filtre d'usuaris estigui sempre actualitzat.
+function updateUserFilter() {
+    const userSelect = document.getElementById('filterUser');
+    const users = [...new Set(allTasks.map(t => t.persona_assignada))];
+    userSelect.innerHTML = '<option value="">Tots els usuaris</option>';
+    users.forEach(u => {
+        const opt = document.createElement('option');
+        opt.value = opt.innerText = u;
+        userSelect.appendChild(opt);
+    });
+}
+
+// Restableix tots els camps de filtre a la seva posició inicial i 
+// torna a mostrar totes les tasques sense cap restricció.
+function resetFilters() {
+    document.getElementById('searchTitle').value = '';
+    document.getElementById('filterUser').value = '';
+    document.getElementById('filterCategory').value = '';
+    document.getElementById('filterStatus').value = '';
+    renderTasks(allTasks);
+}
+
+// ------------------------------------------------------------------------ //
+//                  Funcions de modificació de dades                        //
+// ------------------------------------------------------------------------ //
+
+// Construeix l'estructura HTML de cada targeta de tasca (Task Card).
+// Assigna colors segons la categoria, gestiona les inicials de l'avatar i
+// configura els esdeveniments per permetre que la targeta sigui arrossegable (Drag).
+function createTaskCard(task) {
+    const realId = task.id || task._id;
+    const initials = task.persona_assignada ? task.persona_assignada.charAt(0).toUpperCase() : '?';
+    let colorClass = 'card-default';
+    
+    if (task.categoria === 'Sistemes') colorClass = 'card-blue';
+    else if (task.categoria === 'Disseny') colorClass = 'card-pink';
+    else if (task.categoria === 'Desenvolupament') colorClass = 'card-green';
+
+    const card = document.createElement('div');
+    card.className = `task-card ${colorClass}`;
+    card.id = `task-${realId}`;
+    card.draggable = true;
+    card.ondragstart = (e) => e.dataTransfer.setData("text", e.target.id);
+    
+    card.innerHTML = `
+        <div class="task-title">${task.titol}</div>
+        <div class="task-desc">${task.descripcio}</div>
+        <div class="task-footer">
+            <div class="task-assignee-avatar">${initials}</div>
+            <div class="task-actions">
+                <button onclick="openModal('editar', '', '${realId}')">✏️</button>
+                <button onclick="deleteTask('${realId}')">🗑️</button>
+            </div>
+        </div>
+    `;
+    return card;
+}
+
+// Aquestes funcions gestionen el sistema arrosegar i posar. Quan una tasca es deixa 
+// anar sobre una columna, s'executa una petició PUT a l'API per actualitzar 
+// l'estat del document a la base de dades i es recarrega el tauler.
+function allowDrop(ev) { ev.preventDefault(); }
+async function drop(ev) {
+    ev.preventDefault();
+    const id = ev.dataTransfer.getData("text").replace('task-', '');
+    let col = ev.target;
+    // Busquem el contenidor pare que sigui la columna Kanban
+    while (col && !col.classList.contains('kanban-column')) col = col.parentElement;
+    
+    if (col) {
+        await fetch(`${API_URL}/actualizar/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ estat: col.getAttribute('data-status') })
+        });
+        loadTasks();
+    }
+}
+
+// Gestiona l'obertura de la interficie modal tant per a la creació com per a l'edició.
+// Si és edició, fa un fetch previ per emplenar el formulari amb les dades actuals.
+async function openModal(mode, status = '', id = null) {
+    const modal = document.getElementById('taskModal');
+    modal.style.display = 'block';
+    if (mode === 'crear') {
+        document.getElementById('taskForm').reset();
+        document.getElementById('estat').value = status;
+        document.getElementById('taskId').value = '';
+    } else {
+        const res = await fetch(`${API_URL}/buscar_id/${id}`);
+        const t = await res.json();
+        document.getElementById('taskId').value = id;
+        document.getElementById('titol').value = t.titol;
+        document.getElementById('descripcio').value = t.descripcio;
+        document.getElementById('estat').value = t.estat;
+        document.getElementById('categoria').value = t.categoria;
+        document.getElementById('persona_assignada').value = t.persona_assignada;
+    }
+}
+
+// Tanca la interfice modal de formulari.
+function closeModal() { document.getElementById('taskModal').style.display = 'none'; }
+
+// Gestiona l'enviament del formulari (Submit). Decideix si ha de fer un POST (crear)
+// o un PUT (actualitzar) segons si existeix un ID de tasca, i després actualitza el tauler.
+document.getElementById('taskForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('taskId').value;
+    const data = {
+        titol: document.getElementById('titol').value,
+        descripcio: document.getElementById('descripcio').value,
+        estat: document.getElementById('estat').value,
+        categoria: document.getElementById('categoria').value,
+        persona_assignada: document.getElementById('persona_assignada').value,
+        prioritat: "baixa" // Valor per defecte
+    };
+    
+    await fetch(id ? `${API_URL}/actualizar/${id}` : `${API_URL}/crear`, {
+        method: id ? 'PUT' : 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    });
+    closeModal();
+    loadTasks();
+};
+
+// Elimina de forma permanent una tasca mitjançant una crida a l'endpoint de borrar.
+// Inclou una confirmació de seguretat per a l'usuari.
+async function deleteTask(id) {
+    if (confirm('Estàs segur que vols esborrar aquesta tasca?')) {
+        await fetch(`${API_URL}/borrar/${id}`, { method: 'DELETE' });
+        loadTasks();
+    }
+}
+
+// Càrrega inicial quan es completa la càrrega de la pàgina.
+window.onload = loadTasks;

@@ -1,9 +1,97 @@
-<!doctype html>
-<html>
-  <head>
-    <title>This is the title of the webpage!</title>
-  </head>
-  <body>
-    <p>This is an example paragraph. Anything in the <strong>body</strong> tag will appear on the page, just like this <strong>p</strong> tag and its contents.</p>
-  </body>
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Tasques ASIX</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+<div class="app-container">
+    <header class="header-section">
+        <h1 class="main-title">Gestor de Tasques</h1>
+        <p class="subtitle">Inspirat en KanbanFlow, simplificat per a ASIX.</p>
+
+        <div class="filter-bar">
+            <input type="text" id="searchTitle" placeholder="Cerca per títol..." oninput="filterTasks()">
+            <div class="select-group">
+                <select id="filterUser" onchange="filterTasks()"><option value="">Usuaris</option></select>
+                <select id="filterCategory" onchange="filterTasks()">
+                    <option value="">Categories</option>
+                    <option value="Sistemes">Sistemes</option>
+                    <option value="Disseny">Disseny</option>
+                    <option value="Desenvolupament">Desenvolupament</option>
+                </select>
+                <select id="filterStatus" onchange="filterTasks()">
+                    <option value="">Estats</option>
+                    <option value="pendent">Pendent</option>
+                    <option value="feta">Feta</option>
+                </select>
+                <button class="button" onclick="resetFilters()">Netejar</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="kanban-board">
+        <div class="kanban-column" data-status="pendent">
+            <div class="column-header">
+                <h3>Pendent</h3>
+                <button class="add-task-btn" onclick="openModal('crear', 'pendent')">+</button>
+            </div>
+            <div class="task-grid" id="list-pendent" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+        </div>
+
+        <div class="kanban-column" data-status="feta">
+            <div class="column-header">
+                <h3>Feta</h3>
+                <button class="add-task-btn" onclick="openModal('crear', 'feta')">+</button>
+            </div>
+            <div class="task-grid" id="list-feta" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+        </div>
+    </main>
+</div>
+
+<div id="taskModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle" style="margin:0;">Tasca</h2>
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+        </div>
+        <form id="taskForm">
+            <input type="hidden" id="taskId">
+            <label for="titol">Títol</label>
+            <input type="text" id="titol" class="u-full-width" required>
+            <label for="descripcio">Descripció</label>
+            <textarea id="descripcio" class="u-full-width" required></textarea>
+            <div class="row">
+                <div class="six columns">
+                    <label for="estat">Estat</label>
+                    <select id="estat" class="u-full-width">
+                        <option value="pendent">Pendent</option>
+                        <option value="feta">Feta</option>
+                    </select>
+                </div>
+                <div class="six columns">
+                    <label for="categoria">Categoria</label>
+                    <select id="categoria" class="u-full-width">
+                        <option value="Sistemes">Sistemes</option>
+                        <option value="Disseny">Disseny</option>
+                        <option value="Desenvolupament">Desenvolupament</option>
+                    </select>
+                </div>
+            </div>
+            <label for="persona_assignada">Persona Assignada</label>
+            <input type="text" id="persona_assignada" class="u-full-width" required>
+            <div style="margin-top: 20px; text-align: right;">
+                <button type="button" onclick="closeModal()">Cancel·lar</button>
+                <button type="submit" class="button-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="/static/javascript.js"></script>
+</body>
 </html>

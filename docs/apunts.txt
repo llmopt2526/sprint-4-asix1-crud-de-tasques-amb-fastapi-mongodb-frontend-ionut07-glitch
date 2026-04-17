@@ -1,0 +1,135 @@
+========================================================================
+       GUIA TÈCNICA DEFINITIVA: JAVASCRIPT, FASTAPI I MONGODB
+========================================================================
+
+------------------------------------------------------------------------
+I. FONAMENTS I LÒGICA DE PROGRAMACIÓ (JS)
+------------------------------------------------------------------------
+
+1. IGUALTAT ESTRICTA (===)
+   Concepte: Compara si dos valors són exactament iguals tant en contingut 
+   com en tipus de dada (text, número, booleà).
+   Exemple: 5 === 5 (True) | 5 === "5" (False).
+   Comparació: És com una clau d'alta seguretat. Ha de tenir la forma 
+   (valor) i el material correcte (tipus).
+
+2. OPERADOR LÒGIC OR (||)
+   Concepte: Permet que una condició sigui certa si es compleix qualsevol 
+   de les dues parts. Útil per a filtres opcionals.
+   Exemple: (filterU === "" || task.usuari === filterU)
+   Comparació: Llista de convidats: "Entres si tens entrada VIP O BÉ si 
+   estàs a la llista d'amics".
+
+3. MÈTODE .FILTER() I ARROW FUNCTIONS (=>)
+   Concepte: .filter() crea una llista nova amb els elements que compleixen 
+   una regla definida ràpidament amb la fletxa (=>).
+   Exemple: const fets = allTasks.filter(t => t.estat === "feta");
+   Comparació: Com un colador de cuina que només deixa passar el que 
+   t'interessa segons el forat (la regla).
+
+4. EL SET I L'SPREAD OPERATOR ([...new Set()])
+   Concepte: Extreu valors únics (esborra duplicats) i els torna a llista.
+   Exemple: const unics = [...new Set(["Pau", "Anna", "Pau"])];
+   Comparació: Escàner de llista de compra que esborra productes repetits.
+
+5. LA VARIABLE D'ITERACIÓ (task)
+   Concepte: Nom temporal per a cada element d'una llista en mètodes 
+   com .filter() o .forEach().
+   Comparació: Revisor de tren: el tren és 'allTasks' i 'task' és el 
+   passatger que estàs revisant en cada moment.
+
+6. L'ARRAY BUIT (let allTasks = [])
+   Concepte: Contenidor que comença buit ([]) i s'omple amb les dades 
+   que arriben de l'API (loadTasks).
+   Comparació: Una prestatgeria nova on vas col·locant les caixes 
+   (tasques) que porta el camió (API).
+
+
+------------------------------------------------------------------------
+II. ASINCRONIA I COMUNICACIÓ (API - ESTAT)
+------------------------------------------------------------------------
+
+7. ASYNC / AWAIT (ASINCRONIA)
+   Concepte: Permet esperar una resposta de l'API sense bloquejar la web.
+   Exemple: const res = await fetch(url); const json = await res.json();
+   Comparació: Demanar menjar: fas la comanda (fetch), segueixes parlant 
+   i quan l'avisador sona (await), reculls el menjar.
+
+8. LA CONVERSIÓ DE DADES (.json())
+   Concepte: Tradueix el text pla (JSON) que viatja per Internet a 
+   objectes de JavaScript usables.
+   Flux: MongoDB -> FastAPI (JSON) -> Fetch -> .json() (Variable JS)
+   Comparació: Rebre un moble de l'IKEA (JSON) i muntar-lo (.json()) 
+   per poder-lo fer servir.
+
+
+------------------------------------------------------------------------
+III. MANIPULACIÓ DEL DOM I DISSENY DINÀMIC
+------------------------------------------------------------------------
+
+9. TEMPLATE LITERALS (`text ${variable}`)
+   Concepte: Ús de backticks per injectar variables en text.
+   Exemple: `list-${estat}` -> "list-pendent"
+   Comparació: Un formulari amb espais en blanc que vas omplint.
+
+10. CLASSES CSS DINÀMIQUES
+    Concepte: JS "escriu" el nom d'una classe segons les dades (colors).
+    Exemple: card.className = `task-card ${colorClass}`;
+    Comparació: Uniforme de feina base on cadascú porta un braçalet de 
+    color segons el seu departament.
+
+11. ELS IDS DINÀMICS
+    Concepte: Fabricar l'ID d'un element HTML usant variables de JS.
+    Exemple: document.getElementById(`list-${estat}`);
+    Comparació: Sistema de classificació de magatzem ("fila-1", "fila-2").
+
+
+------------------------------------------------------------------------
+IV. DRAG & DROP (ARROSSEGAR I DEIXAR ANAR)
+------------------------------------------------------------------------
+
+- PONTS (Connectors):
+  * draggable="true" -> Permet que la targeta es pugui moure.
+  * data-status -> Etiqueta de la columna (pendent/feta).
+  * ev.dataTransfer -> La "motxilla" que guarda l'ID durant el vol.
+
+- LÒGICA (Cervell):
+  * preventDefault -> Autorització per poder deixar anar coses.
+  * while(parentElement) -> "Detectiu" que busca la columna correcta.
+  * replace('task-') -> Neteja l'ID per deixar-lo llest per a MongoDB.
+
+Comparació: Moure una carpeta de calaix. Guarda el nom a la motxilla, 
+mira on ha caigut i canvia l'etiqueta pel nom del nou calaix.
+
+
+------------------------------------------------------------------------
+V. DICCIONARI DE PONTS I VARIABLES DE CONTROL
+------------------------------------------------------------------------
+
+PONTS (Connexió entre tecnologies)
+- API_URL: Adreça del servidor FastAPI. El telèfon on truca el JS.
+- task: El document real de MongoDB (títol, descripció, etc.).
+- searchTitle / filterUser...: Conecten els inputs de l'HTML amb el JS.
+- list-${task.estat}: El pont que posa la tasca al calaix HTML correcte.
+- ${colorClass}: El pont entre la lògica JS i el color del CSS.
+- task.id / task._id: El DNI únic per saber què esborrar o editar.
+- data-status: Diu al JS el nou estat en fer Drag & Drop.
+
+LÒGICA (Gestió interna)
+- allTasks: Magatzem global de dades.
+- filtered: El resultat de passar la llista pel colador de cerca.
+- initials: Primera lletra de l'usuari per a l'avatar.
+- colorClass: Decisió de color segons la categoria.
+- users: Llista neta d'usuaris (sense duplicats) per al menú.
+- realId: Correcció per si l'ID ve com .id o ._id.
+- mode: Diu si el formulari és per "crear" o "editar".
+
+------------------------------------------------------------------------
+VI. WEBGRAFÍA
+------------------------------------------------------------------------
+
+https://www.w3schools.com/js/js_array_iteration.asp 
+https://javascript.info/map-set
+https://developer.mozilla.org/es/docs/Web/JavaScript/Reference/Template_literals
+https://developer.mozilla.org/es/docs/Web/API/HTML_Drag_and_Drop_API
+
