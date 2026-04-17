@@ -36,6 +36,11 @@ function renderTasks(tasksToRender) {
     });
 }
 
+// ------------------------------------------------------------------------ //
+//                           Filtratge de Dades                             //
+// ------------------------------------------------------------------------ //
+
+
 // Aquesta funció recull els valors dels inputs per realitzar la cerca per títol.
 // També aplica els filtres per persona assignada, categoria i estat, permetent
 // una cerca combinada molt precisa.
@@ -54,9 +59,6 @@ function filterTasks() {
     renderTasks(filtered);
 }
 
-// ------------------------------------------------------------------------ //
-//                           Filtratge de Dades                             //
-// ------------------------------------------------------------------------ //
 
 // Aquesta funció genera dinàmicament les opcions del desplegable d'usuaris.
 // Fa servir un Set per obtenir noms únics de la llista de tasques actual,
