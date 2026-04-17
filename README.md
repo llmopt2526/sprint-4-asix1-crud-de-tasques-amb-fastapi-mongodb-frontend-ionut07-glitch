@@ -26,6 +26,7 @@ project/
 #                         Instalació/Configuració ApiRest                  #
 # ------------------------------------------------------------------------ #
 
+
 Primerament, haurem de fer un git clone a la nostra màquina real del projecte del Sprint4. Una vegada dins, haurem de crear un entorn virtual amb la comanda python3 -m venv venv i source venv/bin/activate per a executar l'entorn virtual de Python. Una vegada dins, haurem d'anar a la carpeta de backend i instal·lar el requirements.txt, però en el meu cas he afegit fastapi==0.104.1, uvicorn[standard]==0.24.0 i pymongo==4.6.0, on fem servir la FastAPI i PyMongo per a configurar i crear la nostra API. Així mateix, fem servir l'Uvicorn per a desplegar la nostra API de manera molt més còmoda i rapida per a fer les nostres comporvacions amb el psotman i el fronted.
 
 <img width="807" height="447" alt="Captura desde 2026-04-09 10-36-20" src="https://github.com/user-attachments/assets/a5ff79bf-5feb-4344-9e91-1b57ff4173dc" />
@@ -39,5 +40,25 @@ Per altra banda, haurem de tornar a la carpeta del backend, on haurem de modific
 <img width="1402" height="674" alt="Captura desde 2026-04-09 12-54-21" src="https://github.com/user-attachments/assets/925c037a-169e-4ca4-bafc-8c5d1fc2ac6e" />
 
 
+# ------------------------------------------------------------------------ #
+#                         Comprovacions ApiRest                            #
+# ------------------------------------------------------------------------ #
 
 
+Així mateix, farem les diferents comprovacions de cada endpoint amb el Swagger (a la carpeta test tens captures de les comprovacions). Una vegada comprovats tots els diferents endpoints, anirem al Postman i crearem una variable d'entorn amb la URL de la nostra API amb el port 8000.
+
+Seguidament, crearem una col·lecció on provarem cada endpoint per a veure si funciona correctament i els guardarem en la col·lecció. Una vegada fet tot l'anterior, anirem als tres punts d'opcions de la col·lecció i li donarem a exportar col·lecció per a exportar-la a JSON. Com a millora de la meva API, en comptes de tenir diferents endpoints per a cada tipus de CRUD, seria tenir un mateix punt (/tasques/) i, des d'allí, gestionar els diversos mètodes per a cada operació (tasques/buscar/{id} per exemple).
+
+
+<img width="270" height="230" alt="image" src="https://github.com/user-attachments/assets/8bd78527-fe06-4d84-a1b4-cdcc1510c827" />
+
+
+# ------------------------------------------------------------------------ #
+#                      Configuracio/Proves Fronted                         #
+# ------------------------------------------------------------------------ #
+
+Finalment, una vegada hem fet l'API correctament perquè funcioni amb l'API conjunta per a veure-la al navegador amb l'Uvicorn i l'aiofiles perquè trobi els arxius del frontend, especificant-ho abans a l'API on creem la carpeta /static, que està vinculada a la carpeta del frontend per a trobar el CSS i el JS. En aquesta part, haurem de crear el nostre propi HTML, el CSS que fa servir el Skeleton i el JS on implementem els diferents CRUD amb l'API i la connexió on fem servir diferents funcions, objectes, variables...
+
+A més a més, en un app.get farem un punt /ver on ens buscarà l'index.html del frontend per a veure'l al nostre navegador posant http://url:8000/ver. Allí podrem veure bàsicament una pàgina senzilla que replica el Kanbanflow simplificat a "pendent" i "fet", amb una barra de cercador i alguns filtres on estan totes les funcions CRUD. Per altra banda, si aneu a la carpeta de tests, he posat un vídeo del frontend fent les diferents funcions CRUD i tinc una carpeta de documentació amb alguns apunts per a entendre de manera més fàcil el meu codi de JavaScript, amb alguna URL amb documentació a banda dels comentaris al mateix JS.
+
+<img width="1851" height="1122" alt="image" src="https://github.com/user-attachments/assets/23501bff-92d3-4a03-b804-8df0c518dbca" />
