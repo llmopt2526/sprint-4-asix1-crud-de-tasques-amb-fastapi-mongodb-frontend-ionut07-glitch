@@ -123,3 +123,13 @@ LÒGICA (Gestió interna)
 - users: Llista neta d'usuaris (sense duplicats) per al menú.
 - realId: Correcció per si l'ID ve com .id o ._id.
 - mode: Diu si el formulari és per "crear" o "editar".
+
+------------------------------------------------------------------------
+VI. WEBGRAFÍA
+------------------------------------------------------------------------
+
+https://www.w3schools.com/js/js_array_iteration.asp 
+https://javascript.info/map-set
+https://developer.mozilla.org/es/docs/Web/JavaScript/Reference/Template_literals
+https://developer.mozilla.org/es/docs/Web/API/HTML_Drag_and_Drop_API
+
